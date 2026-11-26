@@ -185,24 +185,61 @@ window.createRoom=async()=>{
 };
 
 window.showJoin=()=>{$("joinBox").classList.remove("hidden");$("menuMessage").textContent=""};
-window.joinRoom=async()=>{
- if(!db||!uid){showMenuError("Firebase login is not ready. Refresh and try again.");return}
- const code=$("joinCode").value.trim().toUpperCase();
- if(code.length!==6){showMenuError("Enter a valid 6-character room code.");return}
- showMenuError("Joining room...");
- try{
-  const r=roomRef(code);
-  const result=await runTransaction(r,current=>{
-   if(!current||current.status!=="waiting"||current.player1===uid||current.player2)return;
-   current.player2=uid;current.status="playing";return current;
-  });
-  if(!result.committed){showMenuError("Room not available. Check the code or create another room.");return}
-  mode="online";roomCode=code;mySlot=2;playing=true;history=[];
-  showGame();$("roomPanel").classList.remove("hidden");
-  $("roomCode").textContent=code;$("roomStatus").textContent="Connected to room!";
-  $("message").textContent="Game started. Player 1 goes first.";
-  listenRoom();render();
- }catch(e){showMenuError("Join failed: "+e.message)}
+window.joinRoom = async () => {
+    if (!db || !uid) {
+        showMenuError("Firebase login is not ready. Refresh the page.");
+        return;
+    }
+
+    const code = $("joinCode").value.trim().toUpperCase();
+
+    if (code.length !== 6) {
+        showMenuError("Enter a valid 6-character room code.");
+        return;
+    }
+
+    showMenuError("Joining room...");
+
+    try {
+        const r = roomRef(code);
+
+        const result = await runTransaction(r, (current) => {
+            if (!current) return;
+
+            if (current.status !== "waiting") return;
+            if (current.player1 === uid) return;
+            if (current.player2) return;
+
+            current.player2 = uid;
+            current.status = "playing";
+
+            return current;
+        });
+
+        if (!result.committed) {
+            showMenuError("Room unavailable or already full.");
+            return;
+        }
+
+        mode = "online";
+        roomCode = code;
+        mySlot = 2;
+        playing = true;
+        history = [];
+
+        showGame();
+        $("roomPanel").classList.remove("hidden");
+        $("roomCode").textContent = code;
+        $("roomStatus").textContent = "Connected to room!";
+        $("message").textContent = "Game started!";
+
+        listenRoom();
+        render();
+
+    } catch (error) {
+        showMenuError("Join failed: " + error.message);
+        console.error(error);
+    }
 };
 
 function listenRoom(){
