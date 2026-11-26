@@ -552,29 +552,38 @@ window.joinRoom=async()=>{
 
   showMenuError("Joining room...");
 
-  const result=await runTransaction(roomRef(code),current=>{
+  const result = await runTransaction(roomRef(code), current => {
 
-   if(!current)return;
+    console.log("ROOM DATA:", current);
+    console.log("PLAYER 2 UID:", loginUID);
 
-   if(current.status!=="waiting")return;
+    if (!current) {
+        console.log("REASON: Room does not exist");
+        return;
+    }
 
-   if(current.player1===loginUID)return;
+    if (current.status !== "waiting") {
+        console.log("REASON: Room status is", current.status);
+        return;
+    }
 
-   if(current.player2)return;
+    if (current.player1 === loginUID) {
+        console.log("REASON: Same player UID");
+        return;
+    }
 
-   current.player2=loginUID;
-   current.status="playing";
+    if (current.player2) {
+        console.log("REASON: Room already full");
+        return;
+    }
 
-   return current;
+    current.player2 = loginUID;
+    current.status = "playing";
 
-  });
+    return current;
+});
 
-  if(!result.committed){
-
-   showMenuError("Room unavailable or already full.");
-
-   return;
-  }
+console.log("TRANSACTION RESULT:", result);
 
   mode="online";
   roomCode=code;
