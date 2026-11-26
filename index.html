@@ -4,174 +4,251 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stone Master AI | Made by Tushar</title>
+<title>Stone Master AI</title>
 <style>
 *{box-sizing:border-box}
-body{
- margin:0;min-height:100vh;font-family:Arial,sans-serif;
- background:radial-gradient(circle at top,#243653,#090f1d 65%);
- color:#fff;display:flex;justify-content:center;align-items:center;
- padding:20px
-}
-.container{
- width:100%;max-width:650px;background:#111c2e;
- border:1px solid #34445f;border-radius:22px;padding:28px;
- box-shadow:0 20px 70px #0008;text-align:center
-}
-h1{font-size:34px;margin:5px 0;color:#f5c76b}
-.subtitle{color:#9eacc3;margin-bottom:25px}
-button,input{
- padding:13px 18px;border-radius:10px;border:1px solid #465875;
- font-size:15px;margin:5px
-}
-button{background:#e9b957;color:#172033;font-weight:bold;cursor:pointer}
-button:hover{filter:brightness(1.1)}
-.secondary{background:#253650;color:white}
-input{background:#0b1423;color:white;width:180px}
-.hidden{display:none}
-.modes{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.modes button{min-height:65px}
-.stats{display:flex;justify-content:space-around;margin:22px 0}
-.stat{background:#1c2b43;padding:12px;border-radius:12px;flex:1;margin:4px}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#243b5c,#080e19 70%);font-family:Arial,sans-serif;color:white;display:grid;place-items:center;padding:18px}
+.app{width:100%;max-width:650px;background:#111c2e;border:1px solid #354765;border-radius:22px;padding:26px;text-align:center;box-shadow:0 20px 70px #0009}
+h1{color:#f5c76b;font-size:34px;margin:5px}
+.sub{color:#9eacc3;margin:10px 0 25px}
+button,input{border-radius:10px;padding:13px 16px;font-size:15px;margin:5px}
+button{border:0;background:#edbd60;color:#172033;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.4;cursor:not-allowed}
+.secondary{background:#263852;color:white;border:1px solid #465875}
+input{background:#0b1423;border:1px solid #465875;color:white;width:190px;text-transform:uppercase}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid button{min-height:65px}
+.hidden{display:none!important}
+.stats{display:flex;gap:10px;margin:22px 0}
+.stat{background:#1c2b43;padding:14px;border-radius:12px;flex:1}
 .stat small{display:block;color:#9eacc3;margin-bottom:8px}
 .stat strong{font-size:25px;color:#f5c76b}
-.pile{font-size:75px;letter-spacing:5px;margin:15px 0}
-#stones{font-size:25px;color:#f5c76b}
-.moves{display:flex;justify-content:center;gap:10px;margin:20px}
-.moves button{width:90px;height:55px;font-size:20px}
-#message{min-height:30px;color:#b8c8df;margin:15px}
-#history{color:#9eacc3;font-size:13px;max-height:90px;overflow:auto}
-footer{margin-top:30px;color:#8494ac;font-size:12px;letter-spacing:3px}
-@media(max-width:450px){
- .container{padding:18px}
- h1{font-size:27px}
- .modes{grid-template-columns:1fr}
-}
+.pile{font-size:42px;line-height:1.5;overflow-wrap:anywhere;margin:15px 0}
+#count{font-size:24px;color:#f5c76b}
+.moves{display:flex;justify-content:center;gap:8px;margin:20px 0}
+.moves button{width:85px;font-size:19px}
+#message{min-height:38px;color:#c5d3e8;margin:15px 0}
+#history{color:#91a3bd;font-size:13px;max-height:85px;overflow:auto}
+.room{background:#1c2b43;border-radius:12px;padding:14px;margin:15px 0}
+#roomCode{font-size:27px;color:#f5c76b;letter-spacing:5px;font-weight:bold}
+footer{margin-top:28px;color:#8798b2;font-size:12px;letter-spacing:3px}
+@media(max-width:430px){.app{padding:18px}h1{font-size:27px}.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div class="container">
- <h1>STONE MASTER AI</h1>
- <div class="subtitle">Think Smart. Play Better.</div>
+<div class="app">
+<h1>STONE MASTER AI</h1>
+<div class="sub">Think Smart. Play Better.</div>
 
- <div id="menu">
-  <h3>Choose Your Game</h3>
-  <div class="modes">
-   <button onclick="startGame('ai')">🤖 Play vs AI</button>
-   <button onclick="startGame('local')">👥 2 Players</button>
-   <button onclick="showOnline()">🌐 Online Multiplayer</button>
-  </div>
-  <div id="online" class="hidden">
-   <h3>Online Rooms</h3>
-   <button onclick="createRoom()">Create Room</button>
-   <p>OR</p>
-   <input id="roomInput" placeholder="Enter Room Code" maxlength="6">
-   <button onclick="joinRoom()">Join Room</button>
-   <p id="roomMessage"></p>
-  </div>
-  <p style="color:#9eacc3;font-size:13px">Rules: Remove 1, 2 or 3 stones. The player taking the last stone wins.</p>
- </div>
-
- <div id="game" class="hidden">
-  <div class="stats">
-   <div class="stat"><small>REMAINING STONES</small><strong id="count">15</strong></div>
-   <div class="stat"><small>CURRENT TURN</small><strong id="turn">Player 1</strong></div>
-  </div>
-  <div class="pile" id="pile">🪨 🪨 🪨</div>
-  <div id="stones">15 Stones Remaining</div>
-  <div id="message">Choose how many stones to remove.</div>
-  <div class="moves">
-   <button onclick="move(1)">−1</button>
-   <button onclick="move(2)">−2</button>
-   <button onclick="move(3)">−3</button>
-  </div>
-  <div id="history"></div>
-  <button class="secondary" onclick="backMenu()">Main Menu</button>
-  <button onclick="resetGame()">New Game</button>
- </div>
-
- <footer>MADE BY TUSHAR</footer>
+<div id="menu">
+<h3>Choose Your Game</h3>
+<div class="grid">
+<button onclick="startLocal('ai')">🤖 Play vs AI</button>
+<button onclick="startLocal('local')">👥 2 Players</button>
+<button onclick="createRoom()">🌐 Create Online Room</button>
+<button class="secondary" onclick="showJoin()">🔑 Join Room</button>
+</div>
+<div id="joinBox" class="hidden">
+<p>Enter your room code</p>
+<input id="joinCode" maxlength="6" placeholder="ROOM CODE">
+<button onclick="joinRoom()">Join Game</button>
+</div>
+<div id="menuMessage"></div>
+<p style="color:#9eacc3;font-size:13px">Remove 1, 2 or 3 stones. The player taking the last stone wins.</p>
 </div>
 
-<script>
-let stones=15,mode="ai",player=1,playing=false,history=[];
+<div id="game" class="hidden">
+<div class="stats">
+<div class="stat"><small>STONES LEFT</small><strong id="count">15</strong></div>
+<div class="stat"><small>YOUR TURN</small><strong id="turn">Player 1</strong></div>
+</div>
+<div class="pile" id="pile"></div>
+<div id="message">Choose your move.</div>
+<div class="moves">
+<button onclick="makeMove(1)">−1</button>
+<button onclick="makeMove(2)">−2</button>
+<button onclick="makeMove(3)">−3</button>
+</div>
+<div id="history"></div>
+<div id="roomPanel" class="room hidden">
+<div>Share this room code with Player 2</div>
+<div id="roomCode"></div>
+<button class="secondary" onclick="copyRoom()">Copy Code</button>
+<div id="roomStatus">Waiting for opponent...</div>
+</div>
+<button class="secondary" onclick="backMenu()">Main Menu</button>
+<button onclick="newGame()">New Game</button>
+</div>
+<footer>MADE BY TUSHAR</footer>
+</div>
 
-function startGame(selected){
- mode=selected;
- stones=15;player=1;history=[];playing=true;
- document.getElementById("menu").classList.add("hidden");
- document.getElementById("game").classList.remove("hidden");
- update();
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {getDatabase,ref,set,get,update,onValue,runTransaction}
+ from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import {getAuth,signInAnonymously,onAuthStateChanged}
+ from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+
+/* PASTE YOUR FIREBASE CONFIG HERE */
+const firebaseConfig = {
+ apiKey: "AIzaSyD75GXiFAkhcEu5tmjuYs1MA7rj-nKV_RE",
+  authDomain: "stone-master-ai.firebaseapp.com",
+  databaseURL: "https://stone-master-ai-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "stone-master-ai",
+  storageBucket: "stone-master-ai.firebasestorage.app",
+  messagingSenderId: "254524247068",
+  appId: "1:254524247068:web:bfe350f9de55ace3b023d9",
+  measurementId: "G-Y54RY7MTFG"
+ 
+};
+
+let db,auth,uid="";
+let mode="local",stones=15,player=1,playing=false;
+let roomCode="",mySlot=0,roomListener=null,history=[];
+const $=id=>document.getElementById(id);
+
+try{
+ const app=initializeApp(firebaseConfig);
+ db=getDatabase(app);
+ auth=getAuth(app);
+ signInAnonymously(auth).catch(e=>showMenuError("Login error: "+e.message));
+ onAuthStateChanged(auth,user=>{
+  if(user){uid=user.uid;$("menuMessage").textContent="Online service connected."}
+ });
+}catch(e){showMenuError("Firebase setup error: "+e.message)}
+
+function showMenuError(msg){$("menuMessage").textContent=msg}
+function randomCode(){return Math.random().toString(36).substring(2,8).toUpperCase()}
+function roomRef(code){return ref(db,"rooms/"+code)}
+function showGame(){ $("menu").classList.add("hidden");$("game").classList.remove("hidden") }
+function startLocal(selected){
+ if(roomListener){roomListener();roomListener=null}
+ mode=selected;roomCode="";mySlot=0;stones=15;player=1;history=[];playing=true;
+ $("roomPanel").classList.add("hidden");
+ showGame();$("message").textContent="Choose 1, 2 or 3 stones.";render();
 }
-
-function update(){
- document.getElementById("count").textContent=stones;
- document.getElementById("stones").textContent=stones+" Stones Remaining";
- document.getElementById("turn").textContent=
- mode==="ai"?(player===1?"Your Turn":"AI Turn"):"Player "+player;
- document.getElementById("pile").textContent=
- "🪨 ".repeat(Math.min(stones,15));
- document.getElementById("history").textContent=history.join(" | ");
+function render(){
+ $("count").textContent=stones;
+ $("pile").textContent="🪨 ".repeat(Math.min(stones,15));
+ $("history").textContent=history.join(" | ");
+ if(mode==="ai")$("turn").textContent=player===1?"You":"AI";
+ else if(mode==="local")$("turn").textContent="Player "+player;
+ else $("turn").textContent=playing?(player===mySlot?"Your turn":"Opponent"):"Finished";
+ const canPlay=playing&&(mode!=="online"||player===mySlot);
+ document.querySelectorAll(".moves button").forEach(b=>b.disabled=!canPlay);
 }
-
-function move(n){
- if(!playing || (mode==="ai" && player===2))return;
- if(n>stones)return;
- take(n);
- if(playing && mode==="ai" && player===2){
-  document.getElementById("message").textContent="AI is thinking...";
-  setTimeout(aiMove,600);
- }
-}
-
-function take(n){
- stones-=n;
- history.push((mode==="ai"?(player===1?"You":"AI"):"Player "+player)+" removed "+n);
+function finishIfNeeded(){
  if(stones===0){
   playing=false;
-  let winner=mode==="ai"?(player===1?"You win! 🎉":"AI wins! 🤖"):"Player "+player+" wins! 🎉";
-  document.getElementById("message").textContent=winner;
-  update();
-  return;
+  $("message").textContent=mode==="ai"?(player===1?"You win! 🎉":"AI wins! 🤖"):"Player "+player+" wins! 🎉";
+  render();return true;
  }
- if(mode==="local")player=player===1?2:1;
- else player=player===1?2:1;
- document.getElementById("message").textContent="Choose 1, 2 or 3 stones.";
- update();
+ return false;
+}
+function takeLocal(n){
+ stones-=n;
+ history.push((mode==="ai"?(player===1?"You":"AI"):"Player "+player)+" removed "+n);
+ if(finishIfNeeded())return;
+ player=player===1?2:1;
+ render();
+}
+window.startLocal=startLocal;
+
+window.makeMove=async n=>{
+ if(!playing||n>stones)return;
+ if(mode==="online"){await onlineMove(n);return}
+ if(mode==="ai"&&player!==1)return;
+ takeLocal(n);
+ if(mode==="ai"&&playing&&player===2){
+  $("message").textContent="AI is thinking...";
+  setTimeout(()=>{
+   if(!playing)return;
+   let choice=stones%4||1;
+   takeLocal(Math.min(choice,stones));
+   if(playing)$("message").textContent="Your turn. Choose a move.";
+  },650);
+ }else if(playing)$("message").textContent="Player "+player+"'s turn.";
+};
+
+window.createRoom=async()=>{
+ if(!db||!uid){showMenuError("Firebase login is not ready. Refresh and try again.");return}
+ showMenuError("Creating room...");
+ try{
+  let code=randomCode(),r=roomRef(code);
+  await set(r,{stones:15,turn:1,player1:uid,player2:null,status:"waiting",history:[],createdAt:Date.now()});
+  mode="online";roomCode=code;mySlot=1;playing=true;
+  history=[];showGame();$("roomPanel").classList.remove("hidden");
+  $("roomCode").textContent=code;$("roomStatus").textContent="Waiting for Player 2...";
+  $("message").textContent="Share the code to start playing.";
+  listenRoom();render();
+ }catch(e){showMenuError("Could not create room: "+e.message)}
+};
+
+window.showJoin=()=>{$("joinBox").classList.remove("hidden");$("menuMessage").textContent=""};
+window.joinRoom=async()=>{
+ if(!db||!uid){showMenuError("Firebase login is not ready. Refresh and try again.");return}
+ const code=$("joinCode").value.trim().toUpperCase();
+ if(code.length!==6){showMenuError("Enter a valid 6-character room code.");return}
+ showMenuError("Joining room...");
+ try{
+  const r=roomRef(code);
+  const result=await runTransaction(r,current=>{
+   if(!current||current.status!=="waiting"||current.player1===uid||current.player2)return;
+   current.player2=uid;current.status="playing";return current;
+  });
+  if(!result.committed){showMenuError("Room not available. Check the code or create another room.");return}
+  mode="online";roomCode=code;mySlot=2;playing=true;history=[];
+  showGame();$("roomPanel").classList.remove("hidden");
+  $("roomCode").textContent=code;$("roomStatus").textContent="Connected to room!";
+  $("message").textContent="Game started. Player 1 goes first.";
+  listenRoom();render();
+ }catch(e){showMenuError("Join failed: "+e.message)}
+};
+
+function listenRoom(){
+ if(roomListener)roomListener();
+ roomListener=onValue(roomRef(roomCode),snap=>{
+  if(!snap.exists()){ $("message").textContent="Room no longer exists.";playing=false;render();return}
+  const data=snap.val();
+  stones=data.stones;player=data.turn;history=data.history||[];
+  playing=data.status==="playing";
+  if(data.status==="waiting")$("roomStatus").textContent="Waiting for Player 2...";
+  else if(data.status==="playing")$("roomStatus").textContent="Opponent connected!";
+  else $("roomStatus").textContent="Game finished.";
+  if(data.status==="finished")$("message").textContent="Player "+data.winner+" wins! 🎉";
+  else if(playing)$("message").textContent=player===mySlot?"Your turn!":"Waiting for opponent's move...";
+  render();
+ });
 }
 
-function aiMove(){
- if(!playing)return;
- let n=stones%4;
- if(n===0)n=1;
- take(Math.min(n,stones));
+async function onlineMove(n){
+ try{
+  const result=await runTransaction(roomRef(roomCode),data=>{
+   if(!data||data.status!=="playing"||data.turn!==mySlot||n>data.stones)return;
+   data.stones-=n;
+   data.history=data.history||[];
+   data.history.push("Player "+mySlot+" removed "+n);
+   if(data.stones===0){data.status="finished";data.winner=mySlot}
+   else data.turn=data.turn===1?2:1;
+   return data;
+  });
+  if(!result.committed)$("message").textContent="Move not accepted. Wait for your turn.";
+ }catch(e){$("message").textContent="Move failed: "+e.message}
 }
-
-function resetGame(){
- startGame(mode);
-}
-
-function backMenu(){
- playing=false;
- document.getElementById("game").classList.add("hidden");
- document.getElementById("menu").classList.remove("hidden");
-}
-
-function showOnline(){
- document.getElementById("online").classList.remove("hidden");
- document.getElementById("roomMessage").textContent=
- "Online mode requires Firebase setup. Complete the setup before playing online.";
-}
-
-function createRoom(){
- document.getElementById("roomMessage").textContent=
- "Firebase setup is required to create an online room.";
-}
-
-function joinRoom(){
- document.getElementById("roomMessage").textContent=
- "Firebase setup is required to join an online room.";
-}
+window.copyRoom=async()=>{
+ try{await navigator.clipboard.writeText(roomCode);$("roomStatus").textContent="Room code copied!"}
+ catch(e){$("roomStatus").textContent="Room code: "+roomCode}
+};
+window.newGame=()=>{
+ if(mode==="online"){$("message").textContent="For a new online game, return to menu and create a new room.";return}
+ startLocal(mode);
+};
+window.backMenu=()=>{
+ if(roomListener){roomListener();roomListener=null}
+ playing=false;roomCode="";
+ $("game").classList.add("hidden");$("menu").classList.remove("hidden");
+ $("roomPanel").classList.add("hidden");
+};
 </script>
 </body>
 </html>
