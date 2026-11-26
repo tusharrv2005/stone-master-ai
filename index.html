@@ -4,218 +4,130 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stone Master Game</title>
+<title>Stone Master AI</title>
 
 <style>
 *{box-sizing:border-box}
-
 body{
- margin:0;
- min-height:100vh;
+ margin:0;min-height:100vh;
  background:radial-gradient(circle at top,#243b5c,#080e19 70%);
- font-family:Arial,sans-serif;
- color:white;
- display:grid;
- place-items:center;
- padding:18px;
+ font-family:Arial,sans-serif;color:white;
+ display:grid;place-items:center;padding:18px;
 }
-
 .app{
- width:100%;
- max-width:650px;
- background:#111c2e;
- border:1px solid #354765;
- border-radius:22px;
- padding:26px;
- text-align:center;
- box-shadow:0 20px 70px #0009;
+ width:100%;max-width:650px;background:#111c2e;
+ border:1px solid #354765;border-radius:22px;
+ padding:26px;text-align:center;box-shadow:0 20px 70px #0009;
 }
-
 h1{color:#f5c76b;font-size:34px;margin:5px}
 .sub{color:#9eacc3;margin:10px 0 25px}
-
 button,input{
- border-radius:10px;
- padding:13px 16px;
- font-size:15px;
- margin:5px;
+ border-radius:10px;padding:13px 16px;font-size:15px;margin:5px;
 }
-
-button{
- border:0;
- background:#edbd60;
- color:#172033;
- font-weight:bold;
- cursor:pointer;
-}
-
+button{border:0;background:#edbd60;color:#172033;font-weight:bold;cursor:pointer}
 button:disabled{opacity:.4;cursor:not-allowed}
 .secondary{background:#263852;color:white;border:1px solid #465875}
-
 input{
- background:#0b1423;
- border:1px solid #465875;
- color:white;
- width:190px;
- text-transform:uppercase;
+ background:#0b1423;border:1px solid #465875;color:white;
+ width:190px;text-transform:uppercase;
 }
-
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .grid button{min-height:65px}
 .hidden{display:none!important}
-
 .stats{display:flex;gap:10px;margin:22px 0}
-
-.stat{
- background:#1c2b43;
- padding:14px;
- border-radius:12px;
- flex:1;
-}
-
+.stat{background:#1c2b43;padding:14px;border-radius:12px;flex:1}
 .stat small{display:block;color:#9eacc3;margin-bottom:8px}
 .stat strong{font-size:25px;color:#f5c76b}
-
-.pile{
- font-size:42px;
- line-height:1.5;
- overflow-wrap:anywhere;
- margin:15px 0;
-}
-
-.moves{
- display:flex;
- justify-content:center;
- gap:8px;
- margin:20px 0;
-}
-
+.pile{font-size:42px;line-height:1.5;overflow-wrap:anywhere;margin:15px 0}
+.moves{display:flex;justify-content:center;gap:8px;margin:20px 0}
 .moves button{width:85px;font-size:19px}
-
 #message{min-height:38px;color:#c5d3e8;margin:15px 0}
 #history{color:#91a3bd;font-size:13px;max-height:85px;overflow:auto}
-
-.room{
- background:#1c2b43;
- border-radius:12px;
- padding:14px;
- margin:15px 0;
-}
-
-#roomCode{
- font-size:27px;
- color:#f5c76b;
- letter-spacing:5px;
- font-weight:bold;
-}
-
-footer{
- margin-top:28px;
- color:#8798b2;
- font-size:12px;
- letter-spacing:3px;
-}
-
+.room{background:#1c2b43;border-radius:12px;padding:14px;margin:15px 0}
+#roomCode{font-size:27px;color:#f5c76b;letter-spacing:5px;font-weight:bold}
+footer{margin-top:28px;color:#8798b2;font-size:12px;letter-spacing:3px}
 @media(max-width:430px){
- .app{padding:18px}
- h1{font-size:27px}
- .grid{grid-template-columns:1fr}
+ .app{padding:18px}h1{font-size:27px}.grid{grid-template-columns:1fr}
 }
 </style>
 </head>
 
 <body>
-
 <div class="app">
-
 <h1>STONE MASTER AI</h1>
 <div class="sub">Think Smart. Play Better.</div>
 
 <div id="menu">
-<h3>Choose Your Game</h3>
+ <h3>Choose Your Game</h3>
+ <div class="grid">
+  <button onclick="startLocal('ai')">🤖 Play vs AI</button>
+  <button onclick="startLocal('local')">👥 2 Players</button>
+  <button onclick="createRoom()">🌐 Create Online Room</button>
+  <button class="secondary" onclick="showJoin()">🔑 Join Room</button>
+ </div>
 
-<div class="grid">
-<button onclick="startLocal('ai')">🤖 Play vs AI</button>
-<button onclick="startLocal('local')">👥 2 Players</button>
-<button onclick="createRoom()">🌐 Create Online Room</button>
-<button class="secondary" onclick="showJoin()">🔑 Join Room</button>
-</div>
+ <div id="joinBox" class="hidden">
+  <p>Enter your room code</p>
+  <input id="joinCode" maxlength="6" placeholder="ROOM CODE">
+  <button onclick="joinRoom()">Join Game</button>
+ </div>
 
-<div id="joinBox" class="hidden">
-<p>Enter your room code</p>
-<input id="joinCode" maxlength="6" placeholder="ROOM CODE">
-<button onclick="joinRoom()">Join Game</button>
-</div>
-
-<div id="menuMessage"></div>
-
-<p style="color:#9eacc3;font-size:13px">
-Remove 1, 2 or 3 stones. The player taking the last stone wins.
-</p>
+ <div id="menuMessage"></div>
+ <p style="color:#9eacc3;font-size:13px">
+  Remove 1, 2 or 3 stones. The player taking the last stone wins.
+ </p>
 </div>
 
 <div id="game" class="hidden">
+ <div class="stats">
+  <div class="stat">
+   <small>STONES LEFT</small>
+   <strong id="count">15</strong>
+  </div>
+  <div class="stat">
+   <small>TURN</small>
+   <strong id="turn">Player 1</strong>
+  </div>
+ </div>
 
-<div class="stats">
-<div class="stat">
-<small>STONES LEFT</small>
-<strong id="count">15</strong>
-</div>
+ <div class="pile" id="pile"></div>
+ <div id="message">Choose your move.</div>
 
-<div class="stat">
-<small>YOUR TURN</small>
-<strong id="turn">Player 1</strong>
-</div>
-</div>
+ <div class="moves">
+  <button onclick="makeMove(1)">−1</button>
+  <button onclick="makeMove(2)">−2</button>
+  <button onclick="makeMove(3)">−3</button>
+ </div>
 
-<div class="pile" id="pile"></div>
-<div id="message">Choose your move.</div>
+ <div id="history"></div>
 
-<div class="moves">
-<button onclick="makeMove(1)">−1</button>
-<button onclick="makeMove(2)">−2</button>
-<button onclick="makeMove(3)">−3</button>
-</div>
+ <div id="roomPanel" class="room hidden">
+  <div>Share this room code with Player 2</div>
+  <div id="roomCode"></div>
+  <button class="secondary" onclick="copyRoom()">Copy Code</button>
+  <div id="roomStatus">Waiting for opponent...</div>
+ </div>
 
-<div id="history"></div>
-
-<div id="roomPanel" class="room hidden">
-<div>Share this room code with Player 2</div>
-<div id="roomCode"></div>
-<button class="secondary" onclick="copyRoom()">Copy Code</button>
-<div id="roomStatus">Waiting for opponent...</div>
-</div>
-
-<button class="secondary" onclick="backMenu()">Main Menu</button>
-<button onclick="newGame()">New Game</button>
-
+ <button class="secondary" onclick="backMenu()">Main Menu</button>
+ <button onclick="newGame()">New Game</button>
 </div>
 
 <footer>MADE BY TUSHAR</footer>
 </div>
 
 <script type="module">
-
 import {initializeApp}
-from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+ from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 
 import {
- getDatabase,
- ref,
- set,
- onValue,
- runTransaction
+ getDatabase,ref,set,get,onValue,runTransaction
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
 import {
- getAuth,
- signInAnonymously,
- onAuthStateChanged
+ getAuth,signInAnonymously,onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 
-
 /* FIREBASE CONFIG */
-
 const firebaseConfig = {
  apiKey: "AIzaSyD75GXiFAkhcEu5tmjuYs1MA7rj-nKV_RE",
  authDomain: "stone-master-ai.firebaseapp.com",
@@ -223,268 +135,193 @@ const firebaseConfig = {
  projectId: "stone-master-ai",
  storageBucket: "stone-master-ai.firebasestorage.app",
  messagingSenderId: "254524247068",
- appId: "1:254524247068:web:bfe350f9de55ace3b023d9",
- measurementId: "G-Y54RY7MTFG"
+ appId: "1:254524247068:web:bfe350f9de55ace3b023d9"
 };
 
-
-/* VARIABLES */
-
-let db=null;
-let auth=null;
-let uid="";
-
-let mode="local";
-let stones=15;
-let player=1;
-let playing=false;
-
-let roomCode="";
-let mySlot=0;
-let roomListener=null;
+let db,auth,uid="";
+let mode="local",stones=15,player=1;
+let playing=false,roomCode="",mySlot=0;
 let history=[];
-
+let roomListener=null;
 let authStarted=false;
-let resolveAuthReady;
-
-const authReady = new Promise(resolve=>{
- resolveAuthReady=resolve;
-});
-
+let resolveAuth;
+const authReady=new Promise(resolve=>resolveAuth=resolve);
 const $=id=>document.getElementById(id);
 
-
-/* COMMON FUNCTIONS */
-
-function showMenuError(msg){
- $("menuMessage").textContent=msg;
-}
-
-function randomCode(){
- return Math.random().toString(36).substring(2,8).toUpperCase();
+function menuMessage(message){
+ $("menuMessage").textContent=message;
 }
 
 function roomRef(code){
  return ref(db,"rooms/"+code);
 }
 
+function randomCode(){
+ const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+ let code="";
+ for(let i=0;i<6;i++){
+  code+=chars[Math.floor(Math.random()*chars.length)];
+ }
+ return code;
+}
+
+function stopListener(){
+ if(roomListener){
+  roomListener();
+  roomListener=null;
+ }
+}
+
+/* FIREBASE START */
+try{
+ const app=initializeApp(firebaseConfig);
+ db=getDatabase(app);
+ auth=getAuth(app);
+
+ onAuthStateChanged(auth,user=>{
+  if(user){
+   uid=user.uid;
+   menuMessage("Online service connected.");
+   resolveAuth(uid);
+  }else if(!authStarted){
+   authStarted=true;
+   signInAnonymously(auth).catch(error=>{
+    menuMessage("Login error: "+error.message);
+    console.error(error);
+    resolveAuth(null);
+   });
+  }
+ });
+}catch(error){
+ menuMessage("Firebase setup error: "+error.message);
+ console.error(error);
+ resolveAuth(null);
+}
+
+/* SCREEN */
 function showGame(){
  $("menu").classList.add("hidden");
  $("game").classList.remove("hidden");
 }
 
-
-/* FIREBASE INITIALIZATION */
-
-try{
-
- const app=initializeApp(firebaseConfig);
-
- db=getDatabase(app);
- auth=getAuth(app);
-
- onAuthStateChanged(auth,user=>{
-
-  if(user){
-
-   uid=user.uid;
-
-   $("menuMessage").textContent="Online service connected.";
-
-   resolveAuthReady(uid);
-
-  }else if(!authStarted){
-
-   authStarted=true;
-
-   signInAnonymously(auth).catch(error=>{
-
-    showMenuError("Login error: "+error.message);
-
-    console.error(error);
-
-    resolveAuthReady(null);
-
-   });
-
-  }
-
- });
-
-}catch(error){
-
- showMenuError("Firebase setup error: "+error.message);
-
- console.error(error);
-
- resolveAuthReady(null);
-
-}
-
-
 /* LOCAL GAME */
-
-function startLocal(selected){
-
- if(roomListener){
-  roomListener();
-  roomListener=null;
- }
-
+window.startLocal=function(selected){
+ stopListener();
  mode=selected;
  roomCode="";
  mySlot=0;
-
  stones=15;
  player=1;
  history=[];
  playing=true;
 
  $("roomPanel").classList.add("hidden");
+ $("message").textContent=selected==="ai"?
+  "Your turn. Choose 1, 2 or 3 stones.":
+  "Player 1's turn.";
 
  showGame();
-
- $("message").textContent="Choose 1, 2 or 3 stones.";
-
  render();
-}
-
-window.startLocal=startLocal;
-
+};
 
 function render(){
-
  $("count").textContent=stones;
-
  $("pile").textContent="🪨 ".repeat(Math.min(stones,15));
-
  $("history").textContent=history.join(" | ");
 
  if(mode==="ai"){
-  $("turn").textContent=player===1?"You":"AI";
+  $("turn").textContent=player===1?"You":"Computer";
  }else if(mode==="local"){
   $("turn").textContent="Player "+player;
  }else{
-  $("turn").textContent=playing?
-  (player===mySlot?"Your turn":"Opponent"):
-  "Finished";
+  $("turn").textContent=!playing?"Finished":
+   (player===mySlot?"Your turn":"Opponent");
  }
-
- const canPlay=playing&&(mode!=="online"||player===mySlot);
 
  document.querySelectorAll(".moves button").forEach(button=>{
-  button.disabled=!canPlay;
+  button.disabled=!playing ||
+   (mode==="online" && player!==mySlot);
  });
-
 }
 
+function finishLocal(){
+ if(stones!==0)return false;
 
-function finishIfNeeded(){
-
- if(stones===0){
-
-  playing=false;
-
-  if(mode==="ai"){
-   $("message").textContent=player===1?
-   "You win! 🎉":"AI wins! 🤖";
-  }else{
-   $("message").textContent="Player "+player+" wins! 🎉";
-  }
-
-  render();
-
-  return true;
+ playing=false;
+ if(mode==="ai"){
+  $("message").textContent=player===1?
+   "You win! 🎉":"Computer wins! 🤖";
+ }else{
+  $("message").textContent="Player "+player+" wins! 🎉";
  }
-
- return false;
+ render();
+ return true;
 }
-
 
 function takeLocal(n){
-
  stones-=n;
-
  history.push(
-  (mode==="ai"?
-  (player===1?"You":"AI"):
-  "Player "+player)+" removed "+n
+  (mode==="ai"?(player===1?"You":"Computer"):"Player "+player)+
+  " removed "+n
  );
 
- if(finishIfNeeded())return;
-
+ if(finishLocal())return;
  player=player===1?2:1;
-
  render();
 }
 
-
-/* GAME MOVES */
-
-window.makeMove=async n=>{
-
- if(!playing||n>stones)return;
+/* MOVE */
+window.makeMove=async function(n){
+ if(!playing || n>stones)return;
 
  if(mode==="online"){
   await onlineMove(n);
   return;
  }
 
- if(mode==="ai"&&player!==1)return;
+ if(mode==="ai" && player!==1)return;
 
  takeLocal(n);
 
- if(mode==="ai"&&playing&&player===2){
-
-  $("message").textContent="AI is thinking...";
-
+ if(mode==="ai" && playing && player===2){
+  $("message").textContent="Computer is thinking...";
   setTimeout(()=>{
+   if(!playing || mode!=="ai" || player!==2)return;
 
-   if(!playing)return;
-
-   let choice=stones%4||1;
-
+   const choice=stones%4===0?1:stones%4;
    takeLocal(Math.min(choice,stones));
 
    if(playing){
     $("message").textContent="Your turn. Choose a move.";
    }
-
-  },650);
-
+  },600);
  }else if(playing){
-
   $("message").textContent="Player "+player+"'s turn.";
-
  }
-
 };
 
-
-/* CREATE ONLINE ROOM */
-
-window.createRoom=async()=>{
-
- showMenuError("Connecting to Firebase...");
-
+/* CREATE ROOM */
+window.createRoom=async function(){
  try{
-
+  menuMessage("Connecting to Firebase...");
   const loginUID=await authReady;
 
-  if(!db||!loginUID){
-   showMenuError("Firebase login failed. Refresh and try again.");
+  if(!db || !loginUID){
+   menuMessage("Firebase login failed. Refresh the page.");
    return;
   }
 
-  showMenuError("Creating room...");
+  stopListener();
+  menuMessage("Creating room...");
 
   let code=randomCode();
-  let r=roomRef(code);
+  let room=roomRef(code);
 
-  await set(r,{
+  await set(room,{
    stones:15,
    turn:1,
    player1:loginUID,
+   player2:null,
    status:"waiting",
    history:[],
    createdAt:Date.now()
@@ -493,336 +330,230 @@ window.createRoom=async()=>{
   mode="online";
   roomCode=code;
   mySlot=1;
-
-  playing=false;
+  stones=15;
+  player=1;
   history=[];
+  playing=false;
 
   showGame();
-
   $("roomPanel").classList.remove("hidden");
-
   $("roomCode").textContent=code;
   $("roomStatus").textContent="Waiting for Player 2...";
-
-  $("message").textContent="Share the code to start playing.";
+  $("message").textContent="Share the room code with Player 2.";
 
   listenRoom();
-
   render();
 
  }catch(error){
-
-  showMenuError("Could not create room: "+error.message);
-
+  menuMessage("Create room failed: "+error.message);
   console.error(error);
-
  }
-
 };
-
 
 /* JOIN ROOM */
-
-window.showJoin=()=>{
-
+window.showJoin=function(){
  $("joinBox").classList.remove("hidden");
-
- $("menuMessage").textContent="";
-
+ $("joinCode").focus();
+ menuMessage("");
 };
 
-
-window.joinRoom=async()=>{
-
+window.joinRoom=async function(){
  try{
-
   const loginUID=await authReady;
 
-  if(!db||!loginUID){
-   showMenuError("Firebase login is not ready.");
+  if(!db || !loginUID){
+   menuMessage("Firebase login is not ready.");
    return;
   }
 
   const code=$("joinCode").value.trim().toUpperCase();
 
   if(code.length!==6){
-   showMenuError("Enter a valid 6-character room code.");
+   menuMessage("Enter a valid 6-character room code.");
    return;
   }
 
-  showMenuError("Joining room...");
+  menuMessage("Checking room...");
 
-  const result = await runTransaction(roomRef(code), current => {
+  const room=roomRef(code);
 
-    console.log("ROOM DATA:", current);
-    console.log("PLAYER 2 UID:", loginUID);
+  // First fetch the room from Firebase server.
+  const roomSnapshot=await get(room);
 
-    if (!current) {
-        console.log("REASON: Room does not exist");
-        return;
-    }
+  if(!roomSnapshot.exists()){
+   menuMessage("Room not found. Check the room code.");
+   return;
+  }
 
-    if (current.status !== "waiting") {
-        console.log("REASON: Room status is", current.status);
-        return;
-    }
+  const roomData=roomSnapshot.val();
 
-    if (current.player1 === loginUID) {
-        console.log("REASON: Same player UID");
-        return;
-    }
+  if(roomData.status!=="waiting"){
+   menuMessage("This room is not waiting for a player.");
+   return;
+  }
 
-window.joinRoom = async () => {
-    try {
-        const loginUID = await authReady;
+  if(roomData.player1===loginUID){
+   menuMessage("Use another browser or device to join your room.");
+   return;
+  }
 
-        if (!db || !loginUID) {
-            showMenuError("Firebase login is not ready.");
-            return;
-        }
+  if(roomData.player2){
+   menuMessage("This room is already full.");
+   return;
+  }
 
-        const code = $("joinCode").value.trim().toUpperCase();
+  menuMessage("Joining room...");
 
-        if (code.length !== 6) {
-            showMenuError("Enter a valid 6-character room code.");
-            return;
-        }
+  let failure="";
 
-        showMenuError("Joining room...");
+  const result=await runTransaction(room,current=>{
+   if(!current){
+    failure="Room not found.";
+    return;
+   }
+   if(current.status!=="waiting"){
+    failure="Room is no longer waiting.";
+    return;
+   }
+   if(current.player1===loginUID){
+    failure="You cannot join your own room.";
+    return;
+   }
+   if(current.player2){
+    failure="Room is already full.";
+    return;
+   }
 
-        let reason = "";
+   current.player2=loginUID;
+   current.status="playing";
+   return current;
+  });
 
-        const result = await runTransaction(roomRef(code), current => {
+  console.log("JOIN COMMITTED:",result.committed);
+  console.log("ROOM AFTER JOIN:",result.snapshot.val());
 
-            if (!current) {
-                reason = "Room does not exist. Check room code.";
-                return;
-            }
+  if(!result.committed){
+   menuMessage(failure || "Could not join room. Try a new room.");
+   return;
+  }
 
-            if (current.status !== "waiting") {
-                reason = "Room is not waiting. Status: " + current.status;
-                return;
-            }
+  mode="online";
+  roomCode=code;
+  mySlot=2;
+  history=[];
 
-            if (current.player1 === loginUID) {
-                reason = "You cannot join your own room.";
-                return;
-            }
+  showGame();
+  $("roomPanel").classList.remove("hidden");
+  $("roomCode").textContent=code;
+  $("roomStatus").textContent="Connected! Player 1 is ready.";
+  $("message").textContent="Room joined. Game is starting.";
 
-            if (current.player2) {
-                reason = "Room is already full.";
-                return;
-            }
+  listenRoom();
+  render();
 
-            current.player2 = loginUID;
-            current.status = "playing";
-
-            return current;
-        });
-
-        console.log("JOIN COMMITTED:", result.committed);
-        console.log("ROOM AFTER JOIN:", result.snapshot.val());
-
-        if (!result.committed) {
-            showMenuError(reason || "Join failed. Please try again.");
-            return;
-        }
-
-        mode = "online";
-        roomCode = code;
-        mySlot = 2;
-
-        history = [];
-
-        showGame();
-
-        $("roomPanel").classList.remove("hidden");
-        $("roomCode").textContent = code;
-        $("roomStatus").textContent = "Connected to room!";
-
-        $("message").textContent = "Game started!";
-
-        listenRoom();
-        render();
-
-    } catch (error) {
-        showMenuError("Join failed: " + error.message);
-        console.error(error);
-    }
-};
-
+ }catch(error){
+  menuMessage("Join failed: "+error.message);
+  console.error(error);
  }
-
 };
 
-
-/* LISTEN TO ROOM */
-
+/* LIVE ROOM LISTENER */
 function listenRoom(){
-
- if(roomListener){
-  roomListener();
- }
+ stopListener();
 
  roomListener=onValue(roomRef(roomCode),snapshot=>{
-
   if(!snapshot.exists()){
-
-   $("message").textContent="Room no longer exists.";
-
    playing=false;
-
+   $("message").textContent="Room no longer exists.";
    render();
-
    return;
   }
 
   const data=snapshot.val();
 
-  stones=data.stones;
-  player=data.turn;
+  stones=Number(data.stones);
+  player=Number(data.turn);
   history=data.history||[];
-
   playing=data.status==="playing";
 
   if(data.status==="waiting"){
    $("roomStatus").textContent="Waiting for Player 2...";
+   $("message").textContent="Share the code with Player 2.";
   }else if(data.status==="playing"){
-   $("roomStatus").textContent="Opponent connected!";
-  }else{
+   $("roomStatus").textContent="Both players connected!";
+   $("message").textContent=player===mySlot?
+    "Your turn! Choose 1, 2 or 3.":
+    "Waiting for opponent's move...";
+  }else if(data.status==="finished"){
    $("roomStatus").textContent="Game finished.";
-  }
-
-  if(data.status==="finished"){
-
    $("message").textContent="Player "+data.winner+" wins! 🎉";
-
-  }else if(playing){
-
-   $("message").textContent=
-   player===mySlot?
-   "Your turn!":
-   "Waiting for opponent's move...";
-
   }
 
   render();
 
+ },error=>{
+  $("message").textContent="Room listener error: "+error.message;
+  console.error(error);
  });
-
 }
 
-
 /* ONLINE MOVE */
-
 async function onlineMove(n){
-
  try{
-
   const result=await runTransaction(roomRef(roomCode),data=>{
-
-   if(!data)return;
-
-   if(data.status!=="playing")return;
-
-   if(data.turn!==mySlot)return;
-
-   if(n>data.stones)return;
+   if(!data || data.status!=="playing")return;
+   if(data.turn!==mySlot || n>data.stones)return;
 
    data.stones-=n;
-
    data.history=data.history||[];
-
    data.history.push("Player "+mySlot+" removed "+n);
 
    if(data.stones===0){
-
     data.status="finished";
     data.winner=mySlot;
-
    }else{
-
     data.turn=data.turn===1?2:1;
-
    }
-
    return data;
-
   });
-console.log("JOIN COMMITTED:", result.committed);
-console.log("ROOM AFTER JOIN:", result.snapshot.val());
+
   if(!result.committed){
-
    $("message").textContent="Move not accepted. Wait for your turn.";
-
   }
-
  }catch(error){
-
   $("message").textContent="Move failed: "+error.message;
-
   console.error(error);
-
  }
-
 }
 
-
-/* COPY ROOM CODE */
-
-window.copyRoom=async()=>{
-
+/* OTHER BUTTONS */
+window.copyRoom=async function(){
  try{
-
   await navigator.clipboard.writeText(roomCode);
-
   $("roomStatus").textContent="Room code copied!";
-
  }catch(error){
-
   $("roomStatus").textContent="Room code: "+roomCode;
-
  }
-
 };
 
-
-/* NEW GAME */
-
-window.newGame=()=>{
-
+window.newGame=function(){
  if(mode==="online"){
-
-  $("message").textContent=
-  "For a new online game, return to menu and create a new room.";
-
+  $("message").textContent="Return to menu and create a new online room.";
   return;
  }
-
- startLocal(mode);
-
+ window.startLocal(mode);
 };
 
-
-/* BACK TO MENU */
-
-window.backMenu=()=>{
-
- if(roomListener){
-  roomListener();
-  roomListener=null;
- }
-
+window.backMenu=function(){
+ stopListener();
  playing=false;
  roomCode="";
-
  $("game").classList.add("hidden");
  $("menu").classList.remove("hidden");
-
  $("roomPanel").classList.add("hidden");
-
+ $("joinBox").classList.add("hidden");
+ menuMessage("Choose a game mode.");
 };
-
 </script>
 </body>
 </html>
