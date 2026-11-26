@@ -1,0 +1,177 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stone Master AI | Made by Tushar</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;min-height:100vh;font-family:Arial,sans-serif;
+ background:radial-gradient(circle at top,#243653,#090f1d 65%);
+ color:#fff;display:flex;justify-content:center;align-items:center;
+ padding:20px
+}
+.container{
+ width:100%;max-width:650px;background:#111c2e;
+ border:1px solid #34445f;border-radius:22px;padding:28px;
+ box-shadow:0 20px 70px #0008;text-align:center
+}
+h1{font-size:34px;margin:5px 0;color:#f5c76b}
+.subtitle{color:#9eacc3;margin-bottom:25px}
+button,input{
+ padding:13px 18px;border-radius:10px;border:1px solid #465875;
+ font-size:15px;margin:5px
+}
+button{background:#e9b957;color:#172033;font-weight:bold;cursor:pointer}
+button:hover{filter:brightness(1.1)}
+.secondary{background:#253650;color:white}
+input{background:#0b1423;color:white;width:180px}
+.hidden{display:none}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modes button{min-height:65px}
+.stats{display:flex;justify-content:space-around;margin:22px 0}
+.stat{background:#1c2b43;padding:12px;border-radius:12px;flex:1;margin:4px}
+.stat small{display:block;color:#9eacc3;margin-bottom:8px}
+.stat strong{font-size:25px;color:#f5c76b}
+.pile{font-size:75px;letter-spacing:5px;margin:15px 0}
+#stones{font-size:25px;color:#f5c76b}
+.moves{display:flex;justify-content:center;gap:10px;margin:20px}
+.moves button{width:90px;height:55px;font-size:20px}
+#message{min-height:30px;color:#b8c8df;margin:15px}
+#history{color:#9eacc3;font-size:13px;max-height:90px;overflow:auto}
+footer{margin-top:30px;color:#8494ac;font-size:12px;letter-spacing:3px}
+@media(max-width:450px){
+ .container{padding:18px}
+ h1{font-size:27px}
+ .modes{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="container">
+ <h1>STONE MASTER AI</h1>
+ <div class="subtitle">Think Smart. Play Better.</div>
+
+ <div id="menu">
+  <h3>Choose Your Game</h3>
+  <div class="modes">
+   <button onclick="startGame('ai')">🤖 Play vs AI</button>
+   <button onclick="startGame('local')">👥 2 Players</button>
+   <button onclick="showOnline()">🌐 Online Multiplayer</button>
+  </div>
+  <div id="online" class="hidden">
+   <h3>Online Rooms</h3>
+   <button onclick="createRoom()">Create Room</button>
+   <p>OR</p>
+   <input id="roomInput" placeholder="Enter Room Code" maxlength="6">
+   <button onclick="joinRoom()">Join Room</button>
+   <p id="roomMessage"></p>
+  </div>
+  <p style="color:#9eacc3;font-size:13px">Rules: Remove 1, 2 or 3 stones. The player taking the last stone wins.</p>
+ </div>
+
+ <div id="game" class="hidden">
+  <div class="stats">
+   <div class="stat"><small>REMAINING STONES</small><strong id="count">15</strong></div>
+   <div class="stat"><small>CURRENT TURN</small><strong id="turn">Player 1</strong></div>
+  </div>
+  <div class="pile" id="pile">🪨 🪨 🪨</div>
+  <div id="stones">15 Stones Remaining</div>
+  <div id="message">Choose how many stones to remove.</div>
+  <div class="moves">
+   <button onclick="move(1)">−1</button>
+   <button onclick="move(2)">−2</button>
+   <button onclick="move(3)">−3</button>
+  </div>
+  <div id="history"></div>
+  <button class="secondary" onclick="backMenu()">Main Menu</button>
+  <button onclick="resetGame()">New Game</button>
+ </div>
+
+ <footer>MADE BY TUSHAR</footer>
+</div>
+
+<script>
+let stones=15,mode="ai",player=1,playing=false,history=[];
+
+function startGame(selected){
+ mode=selected;
+ stones=15;player=1;history=[];playing=true;
+ document.getElementById("menu").classList.add("hidden");
+ document.getElementById("game").classList.remove("hidden");
+ update();
+}
+
+function update(){
+ document.getElementById("count").textContent=stones;
+ document.getElementById("stones").textContent=stones+" Stones Remaining";
+ document.getElementById("turn").textContent=
+ mode==="ai"?(player===1?"Your Turn":"AI Turn"):"Player "+player;
+ document.getElementById("pile").textContent=
+ "🪨 ".repeat(Math.min(stones,15));
+ document.getElementById("history").textContent=history.join(" | ");
+}
+
+function move(n){
+ if(!playing || (mode==="ai" && player===2))return;
+ if(n>stones)return;
+ take(n);
+ if(playing && mode==="ai" && player===2){
+  document.getElementById("message").textContent="AI is thinking...";
+  setTimeout(aiMove,600);
+ }
+}
+
+function take(n){
+ stones-=n;
+ history.push((mode==="ai"?(player===1?"You":"AI"):"Player "+player)+" removed "+n);
+ if(stones===0){
+  playing=false;
+  let winner=mode==="ai"?(player===1?"You win! 🎉":"AI wins! 🤖"):"Player "+player+" wins! 🎉";
+  document.getElementById("message").textContent=winner;
+  update();
+  return;
+ }
+ if(mode==="local")player=player===1?2:1;
+ else player=player===1?2:1;
+ document.getElementById("message").textContent="Choose 1, 2 or 3 stones.";
+ update();
+}
+
+function aiMove(){
+ if(!playing)return;
+ let n=stones%4;
+ if(n===0)n=1;
+ take(Math.min(n,stones));
+}
+
+function resetGame(){
+ startGame(mode);
+}
+
+function backMenu(){
+ playing=false;
+ document.getElementById("game").classList.add("hidden");
+ document.getElementById("menu").classList.remove("hidden");
+}
+
+function showOnline(){
+ document.getElementById("online").classList.remove("hidden");
+ document.getElementById("roomMessage").textContent=
+ "Online mode requires Firebase setup. Complete the setup before playing online.";
+}
+
+function createRoom(){
+ document.getElementById("roomMessage").textContent=
+ "Firebase setup is required to create an online room.";
+}
+
+function joinRoom(){
+ document.getElementById("roomMessage").textContent=
+ "Firebase setup is required to join an online room.";
+}
+</script>
+</body>
+</html>
