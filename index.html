@@ -708,7 +708,8 @@ async function onlineMove(n){
    return data;
 
   });
-
+console.log("JOIN COMMITTED:", result.committed);
+console.log("ROOM AFTER JOIN:", result.snapshot.val());
   if(!result.committed){
 
    $("message").textContent="Move not accepted. Wait for your turn.";
